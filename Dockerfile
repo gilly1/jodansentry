@@ -38,6 +38,10 @@ FROM php:8.3-fpm-alpine
 
 # Install build deps (virtual package for easy cleanup) + runtime deps
 RUN apk add --no-cache --virtual .build-deps \
+        autoconf \
+        gcc \
+        g++ \
+        make \
         libzip-dev \
         icu-dev \
         oniguruma-dev \
