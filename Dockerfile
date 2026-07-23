@@ -28,7 +28,8 @@ RUN composer install \
     --no-scripts \
     --prefer-dist \
     --optimize-autoloader \
-    --no-progress
+    --no-progress \
+    --ignore-platform-reqs
 
 # ─────────────────────────────────────────────────────────────
 # Stage 3: Production image
