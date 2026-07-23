@@ -1,0 +1,62 @@
+services:
+  app:
+    image: ${DOCKER_USERNAME}/mpesa-salary:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mpesa_salary
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${APP_PORT:-8084}:80"
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - global
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  queue:
+    image: ${DOCKER_USERNAME}/mpesa-salary:${TAG:-latest}
+    container_name: mpesa_salary_queue
+    restart: unless-stopped
+    env_file:
+      - .env
+    entrypoint: ["entrypoint.sh"]
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - global
+
+  scheduler:
+    image: ${DOCKER_USERNAME}/mpesa-salary:${TAG:-latest}
+    container_name: mpesa_salary_scheduler
+    restart: unless-stopped
+    env_file:
+      - .env
+    entrypoint: ["entrypoint.sh"]
+    command: ["/bin/sh", "-c", "while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+    volumes:
+      - app_storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - global
+
+volumes:
+  app_storage:
+
+networks:
+  global:
+    name: sekani_global
+    external: true
