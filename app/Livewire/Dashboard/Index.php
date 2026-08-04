@@ -5,6 +5,7 @@ namespace App\Livewire\Dashboard;
 use App\Enums\PaymentBatchStatus;
 use App\Models\PaymentBatch;
 use App\Models\PaymentItem;
+use App\Models\SystemSetting;
 use App\Services\Mpesa\MpesaClient;
 use App\Services\Mpesa\MpesaPayloadBuilder;
 use Livewire\Component;
@@ -13,8 +14,16 @@ use Illuminate\Support\Facades\Log;
 class Index extends Component
 {
     public ?array $balanceData = null;
+    public ?array $storedBalance = null;
+    public ?string $balanceUpdatedAt = null;
     public bool $loadingBalance = false;
     public ?string $balanceError = null;
+    public ?string $balanceConversationId = null;
+
+    public function mount()
+    {
+        $this->loadStoredBalance();
+    }
 
     public function queryBalance()
     {
@@ -31,6 +40,10 @@ class Index extends Component
 
             if (($response['ResponseCode'] ?? '') === '0') {
                 $this->balanceData = $response;
+                $this->balanceConversationId = $response['ConversationID'] ?? null;
+
+                SystemSetting::setValue('mpesa_balance_originator_id', $response['OriginatorConversationID'] ?? '');
+                SystemSetting::setValue('mpesa_balance_conversation_id', $response['ConversationID'] ?? '');
             } else {
                 $this->balanceError = $response['ResponseDescription'] ?? 'Failed to query balance';
             }
@@ -39,6 +52,23 @@ class Index extends Component
             Log::channel('mpesa')->error('Balance query failed', ['error' => $e->getMessage()]);
         } finally {
             $this->loadingBalance = false;
+        }
+    }
+
+    public function refreshBalance()
+    {
+        $this->loadStoredBalance();
+    }
+
+    private function loadStoredBalance(): void
+    {
+        $balanceJson = SystemSetting::getValue('mpesa_balance_data');
+        $this->storedBalance = $balanceJson ? json_decode($balanceJson, true) : null;
+        $this->balanceUpdatedAt = SystemSetting::getValue('mpesa_balance_updated_at');
+        $storedError = SystemSetting::getValue('mpesa_balance_error');
+
+        if ($storedError && !$this->storedBalance) {
+            $this->balanceError = $storedError;
         }
     }
 

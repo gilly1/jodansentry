@@ -1,15 +1,13 @@
 #!/bin/sh
 set -e
 
-# Ensure storage directories exist and have correct permissions
+# Ensure storage directories exist
 mkdir -p \
     storage/app/public \
     storage/framework/cache/data \
     storage/framework/sessions \
     storage/framework/views \
     storage/logs
-chown -R www-data:www-data storage
-chmod -R 775 storage
 
 # If running as the app container (supervisord), run Laravel setup
 if [ "$1" = "supervisord" ]; then
@@ -21,5 +19,9 @@ if [ "$1" = "supervisord" ]; then
     # Link storage
     php artisan storage:link 2>/dev/null || true
 fi
+
+# Set permissions AFTER artisan commands to cover any files they created
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
 
 exec "$@"

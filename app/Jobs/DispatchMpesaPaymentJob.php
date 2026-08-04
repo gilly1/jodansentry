@@ -26,7 +26,16 @@ class DispatchMpesaPaymentJob implements ShouldQueue
     {
         $item = PaymentItem::lockForUpdate()->find($this->paymentItemId);
 
+        Log::channel('mpesa')->info('Dispatching M-Pesa payment', [
+            'item_id' => $this->paymentItemId,
+            'status' => $item?->status,
+        ]);
+
         if (!$item || !$item->isPayable()) {
+            Log::channel('mpesa')->warning('Payment item not found or not payable', [
+                'item_id' => $this->paymentItemId,
+                'status' => $item?->status,
+            ]);
             return;
         }
 

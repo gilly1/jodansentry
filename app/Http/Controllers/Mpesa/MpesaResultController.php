@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mpesa;
 
 use App\Actions\Mpesa\HandleB2CResultCallback;
+use App\Actions\Mpesa\HandleBalanceResultCallback;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,9 +20,12 @@ class MpesaResultController extends Controller
         return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Success']);
     }
 
-    public function accountBalanceResult(Request $request): JsonResponse
+    public function accountBalanceResult(Request $request, HandleBalanceResultCallback $action): JsonResponse
     {
         Log::channel('mpesa')->info('Account Balance Result', ['data' => $request->all()]);
+
+        $action->execute($request->all());
+
         return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Success']);
     }
 
