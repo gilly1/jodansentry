@@ -34,7 +34,7 @@ class BackupDatabase extends Command
             'mysql' => $this->backupMysql($dbConfig, $filepath),
             'pgsql' => $this->backupPostgres($dbConfig, $filepath),
             'sqlite' => $this->backupSqlite($dbConfig, $filepath),
-            default => $this->fail("Unsupported database driver: {$connection}"),
+            default => $this->abortWithError("Unsupported database driver: {$connection}"),
         };
 
         if ($result !== 0) {
@@ -131,7 +131,7 @@ class BackupDatabase extends Command
         }
     }
 
-    protected function fail(string $message): int
+    protected function abortWithError(string $message): int
     {
         $this->error($message);
         return 1;
