@@ -42,11 +42,37 @@ class MpesaResponseParser
 
     public function transactionReceipt(): ?string
     {
+        return $this->resultParameter('TransactionReceipt');
+    }
+
+    public function receiverPartyPublicName(): ?string
+    {
+        $value = $this->resultParameter('ReceiverPartyPublicName');
+
+        if (!$value) {
+            return null;
+        }
+
+        // Format is typically "254XXXXXXXXX - Name", extract just the name
+        if (str_contains($value, ' - ')) {
+            return trim(explode(' - ', $value, 2)[1]);
+        }
+
+        return trim($value);
+    }
+
+    public function transactionAmount(): ?string
+    {
+        return $this->resultParameter('TransactionAmount');
+    }
+
+    private function resultParameter(string $key): ?string
+    {
         $params = $this->data['Result']['ResultParameters']['ResultParameter'] ?? [];
 
         foreach ($params as $param) {
-            if ($param['Key'] === 'TransactionReceipt') {
-                return $param['Value'];
+            if (($param['Key'] ?? '') === $key) {
+                return $param['Value'] ?? null;
             }
         }
 

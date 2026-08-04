@@ -4,8 +4,10 @@ namespace App\Actions\Mpesa;
 
 use App\Enums\PaymentItemStatus;
 use App\Models\AuditLog;
+use App\Models\Contact;
 use App\Models\MpesaApiLog;
 use App\Models\PaymentItem;
+use App\Models\SuccessfulTransaction;
 use App\Services\Mpesa\MpesaResponseParser;
 use Illuminate\Support\Facades\Log;
 
@@ -59,6 +61,8 @@ class HandleB2CResultCallback
                 'callback_payload' => $data,
                 'processed_at' => now(),
             ]);
+
+            $this->recordContactAndTransaction($item, $parser);
         } else {
             $item->update([
                 'status' => PaymentItemStatus::FAILED,
@@ -84,5 +88,29 @@ class HandleB2CResultCallback
         );
 
         app(UpdateBatchAggregateStatus::class)->execute($item->batch);
+    }
+
+    private function recordContactAndTransaction(PaymentItem $item, MpesaResponseParser $parser): void
+    {
+        $phone = $item->normalized_phone;
+        $mpesaName = $parser->receiverPartyPublicName() ?? $item->employee_name ?? 'Unknown';
+
+        $contact = Contact::updateOrCreate(
+            ['phone_number' => $phone],
+            ['mpesa_name' => $mpesaName],
+        );
+
+        SuccessfulTransaction::create([
+            'contact_id' => $contact->id,
+            'payment_item_id' => $item->id,
+            'payment_batch_id' => $item->payment_batch_id,
+            'transaction_receipt' => $parser->transactionReceipt(),
+            'phone_number' => $phone,
+            'amount' => $item->amount,
+            'mpesa_result_description' => $parser->resultDescription(),
+            'paid_at' => now(),
+        ]);
+
+        $contact->refreshTotals();
     }
 }

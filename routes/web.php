@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Contacts\ContactDetails;
+use App\Livewire\Contacts\ContactList;
 use App\Livewire\Admin\CreateUser;
 use App\Livewire\Admin\EditUser;
 use App\Livewire\Admin\RolesPermissions;
@@ -39,6 +41,10 @@ Route::middleware('auth')->group(function () {
 
     // M-Pesa
     Route::get('/mpesa/transaction-status', TransactionStatus::class)->name('mpesa.transaction-status');
+
+    // Contacts
+    Route::get('/contacts', ContactList::class)->name('contacts.index');
+    Route::get('/contacts/{contact}', ContactDetails::class)->name('contacts.show');
 
     // Audit Logs
     Route::get('/audit-logs', AuditLogs::class)->name('audit-logs');
