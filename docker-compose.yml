@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mpesa_gateway
+    container_name: jodan_sentry
     restart: unless-stopped
     env_file:
       - .env
@@ -23,7 +23,7 @@ services:
 
   queue:
     image: ${DOCKER_USERNAME}/jodan-sentry:${TAG:-latest}
-    container_name: mpesa_gateway_queue
+    container_name: jodan_sentry_queue
     restart: unless-stopped
     env_file:
       - .env
@@ -39,7 +39,7 @@ services:
 
   scheduler:
     image: ${DOCKER_USERNAME}/jodan-sentry:${TAG:-latest}
-    container_name: mpesa_gateway_scheduler
+    container_name: jodan_sentry_scheduler
     restart: unless-stopped
     env_file:
       - .env

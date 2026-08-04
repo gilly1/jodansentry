@@ -39,8 +39,8 @@ jobs:
             cd ${{ secrets.DEPLOY_DIR }}/jodan
             docker compose pull app queue scheduler
             docker compose up -d app queue scheduler
-            docker exec mpesa_gateway php artisan migrate --force
-            docker exec mpesa_gateway php artisan config:cache
-            docker exec mpesa_gateway php artisan route:cache
-            docker exec mpesa_gateway php artisan view:cache
-            docker exec mpesa_gateway php artisan queue:restart
+            docker exec jodan_sentry php artisan migrate --force
+            docker exec jodan_sentry php artisan config:cache
+            docker exec jodan_sentry php artisan route:cache
+            docker exec jodan_sentry php artisan view:cache
+            docker exec jodan_sentry php artisan queue:restart
