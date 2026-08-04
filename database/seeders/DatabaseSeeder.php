@@ -73,3 +73,4 @@ class DatabaseSeeder extends Seeder
         $adminUser->assignRole('admin');
     }
 }
+
