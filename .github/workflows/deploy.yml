@@ -26,8 +26,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/mpesa-gateway:latest
-            ${{ secrets.DOCKER_USERNAME }}/mpesa-gateway:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/jodan-sentry:latest
+            ${{ secrets.DOCKER_USERNAME }}/jodan-sentry:${{ github.sha }}
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1

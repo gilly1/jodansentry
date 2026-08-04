@@ -1,6 +1,6 @@
 services:
   app:
-    image: ${DOCKER_USERNAME}/mpesa-gateway:${TAG:-latest}
+    image: ${DOCKER_USERNAME}/jodan-sentry:${TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,7 +22,7 @@ services:
       start_period: 15s
 
   queue:
-    image: ${DOCKER_USERNAME}/mpesa-gateway:${TAG:-latest}
+    image: ${DOCKER_USERNAME}/jodan-sentry:${TAG:-latest}
     container_name: mpesa_gateway_queue
     restart: unless-stopped
     env_file:
@@ -38,7 +38,7 @@ services:
       - global
 
   scheduler:
-    image: ${DOCKER_USERNAME}/mpesa-gateway:${TAG:-latest}
+    image: ${DOCKER_USERNAME}/jodan-sentry:${TAG:-latest}
     container_name: mpesa_gateway_scheduler
     restart: unless-stopped
     env_file:
