@@ -67,6 +67,9 @@ class DispatchMpesaPaymentJob implements ShouldQueue
 
             AuditLog::record('payment_dispatched', $item, null, [
                 'response_code' => $response->responseCode(),
+                'response_description' => $response->responseDescription(),
+                'phone' => $item->normalized_phone,
+                'amount' => $item->amount,
             ]);
         } catch (MpesaException $e) {
             $item->update([
@@ -78,6 +81,8 @@ class DispatchMpesaPaymentJob implements ShouldQueue
 
             AuditLog::record('payment_failed', $item, null, null, [
                 'error' => $e->getMessage(),
+                'phone' => $item->normalized_phone,
+                'amount' => $item->amount,
             ]);
 
             Log::channel('mpesa')->error('Payment dispatch failed', [

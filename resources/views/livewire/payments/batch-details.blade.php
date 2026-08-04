@@ -89,6 +89,7 @@
                         <th class="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Phone</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Amount</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Status</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Reason</th>
                         <th class="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Receipt</th>
                     </tr>
                 </thead>
@@ -100,6 +101,23 @@
                         <td class="px-4 py-2.5 text-slate-600">{{ $item->normalized_phone ?? $item->phone_number_raw }}</td>
                         <td class="px-4 py-2.5 font-medium">KES {{ number_format($item->amount, 0) }}</td>
                         <td class="px-4 py-2.5">@include('components.status-badge', ['status' => $item->status])</td>
+                        <td class="px-4 py-2.5 text-xs text-slate-600 max-w-xs">
+                            @if($item->status->value === 'invalid' && $item->validation_errors)
+                                <span class="text-red-600">{{ implode(', ', $item->validation_errors) }}</span>
+                            @elseif($item->status->value === 'failed')
+                                <span class="text-red-600">{{ $item->mpesa_result_description ?? $item->mpesa_response_description ?? 'Payment failed' }}</span>
+                            @elseif($item->status->value === 'timeout')
+                                <span class="text-amber-600">Request timed out - no response received</span>
+                            @elseif($item->status->value === 'successful')
+                                <span class="text-emerald-600">{{ $item->mpesa_result_description ?? 'Completed successfully' }}</span>
+                            @elseif(in_array($item->status->value, ['queued', 'processing']))
+                                <span class="text-blue-600">Awaiting M-Pesa response</span>
+                            @elseif($item->status->value === 'validated')
+                                <span class="text-slate-500">Ready for processing</span>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-2.5 text-slate-500 text-xs font-mono">{{ $item->mpesa_transaction_receipt ?? '-' }}</td>
                     </tr>
                     @endforeach

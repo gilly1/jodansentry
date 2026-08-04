@@ -29,6 +29,7 @@
                         <th class="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">User</th>
                         <th class="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Action</th>
                         <th class="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Subject</th>
+                        <th class="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Message</th>
                         <th class="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">IP</th>
                         <th class="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Details</th>
                     </tr>
@@ -48,6 +49,24 @@
                                 -
                             @endif
                         </td>
+                        <td class="px-5 py-3 text-xs max-w-xs truncate">
+                            @php
+                                $message = $log->new_values['response_description']
+                                    ?? $log->new_values['result_description']
+                                    ?? $log->new_values['message']
+                                    ?? $log->metadata['error']
+                                    ?? $log->metadata['reason']
+                                    ?? $log->metadata['message']
+                                    ?? null;
+                            @endphp
+                            @if($message)
+                                <span class="@if(str_contains($log->action, 'failed') || str_contains($log->action, 'rejected') || str_contains($log->action, 'timeout')) text-red-600 @elseif(str_contains($log->action, 'callback') || str_contains($log->action, 'dispatched')) text-slate-700 @else text-slate-600 @endif">
+                                    {{ \Illuminate\Support\Str::limit($message, 60) }}
+                                </span>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
+                        </td>
                         <td class="px-5 py-3 text-slate-500 text-xs font-mono">{{ $log->ip_address }}</td>
                         <td class="px-5 py-3">
                             @if($log->new_values || $log->metadata)
@@ -62,14 +81,14 @@
                     </tr>
                     @if($log->new_values || $log->metadata)
                     <tr x-show="expanded" x-cloak>
-                        <td colspan="6" class="px-5 py-3 bg-slate-50">
+                        <td colspan="7" class="px-5 py-3 bg-slate-50">
                             <pre class="text-xs text-slate-600 overflow-x-auto whitespace-pre-wrap max-h-40">{{ json_encode($log->new_values ?? $log->metadata, JSON_PRETTY_PRINT) }}</pre>
                         </td>
                     </tr>
                     @endif
                     @empty
                     <tr>
-                        <td colspan="6" class="px-5 py-12 text-center text-sm text-slate-500">No audit logs found.</td>
+                        <td colspan="7" class="px-5 py-12 text-center text-sm text-slate-500">No audit logs found.</td>
                     </tr>
                     @endforelse
                 </tbody>

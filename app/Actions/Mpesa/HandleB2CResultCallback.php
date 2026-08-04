@@ -73,7 +73,14 @@ class HandleB2CResultCallback
             'payment_callback_received',
             $item,
             null,
-            ['result_code' => $parser->resultCode(), 'status' => $item->status->value],
+            [
+                'result_code' => $parser->resultCode(),
+                'result_description' => $parser->resultDescription(),
+                'status' => $item->status->value,
+                'transaction_receipt' => $parser->transactionReceipt(),
+                'phone' => $item->normalized_phone,
+                'amount' => $item->amount,
+            ],
         );
 
         app(UpdateBatchAggregateStatus::class)->execute($item->batch);

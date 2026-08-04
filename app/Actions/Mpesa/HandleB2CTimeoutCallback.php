@@ -43,7 +43,12 @@ class HandleB2CTimeoutCallback
             'timeout_payload' => $data,
         ]);
 
-        AuditLog::record('payment_timeout', $item);
+        AuditLog::record('payment_timeout', $item, null, [
+            'message' => 'M-Pesa request timed out - no response received',
+            'phone' => $item->normalized_phone,
+            'amount' => $item->amount,
+            'originator_conversation_id' => $item->mpesa_originator_conversation_id,
+        ]);
 
         app(UpdateBatchAggregateStatus::class)->execute($item->batch);
     }
