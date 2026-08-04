@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Mpesa;
 
+use App\Models\MpesaApiLog;
 use App\Models\PaymentItem;
 use App\Services\Mpesa\MpesaClient;
 use App\Services\Mpesa\MpesaPayloadBuilder;
@@ -14,6 +15,8 @@ class TransactionStatus extends Component
     public ?array $statusResult = null;
     public ?string $error = null;
     public bool $loading = false;
+    public ?string $conversationId = null;
+    public ?array $callbackResult = null;
 
     public function query()
     {
@@ -22,6 +25,8 @@ class TransactionStatus extends Component
         $this->loading = true;
         $this->error = null;
         $this->statusResult = null;
+        $this->callbackResult = null;
+        $this->conversationId = null;
 
         try {
             $builder = app(MpesaPayloadBuilder::class);
@@ -32,6 +37,7 @@ class TransactionStatus extends Component
 
             if (($response['ResponseCode'] ?? '') === '0') {
                 $this->statusResult = $response;
+                $this->conversationId = $response['ConversationID'] ?? null;
             } else {
                 $this->error = $response['ResponseDescription'] ?? 'Query failed';
             }
@@ -43,9 +49,57 @@ class TransactionStatus extends Component
         }
     }
 
+    public function checkCallback()
+    {
+        if (!$this->transactionId) {
+            return;
+        }
+
+        // Look for callback log matching this transaction
+        $callbackLog = MpesaApiLog::where('direction', 'callback')
+            ->where('endpoint', '/transaction-status/result')
+            ->whereJsonContains('payload->Result->TransactionID', $this->transactionId)
+            ->latest()
+            ->first();
+
+        if ($callbackLog) {
+            $result = $callbackLog->payload['Result'] ?? $callbackLog->payload;
+            $this->callbackResult = $this->parseCallbackResult($result);
+        }
+    }
+
+    private function parseCallbackResult(array $result): array
+    {
+        $parsed = [
+            'result_code' => (string) ($result['ResultCode'] ?? ''),
+            'result_desc' => $result['ResultDesc'] ?? '',
+            'conversation_id' => $result['ConversationID'] ?? '',
+            'transaction_id' => $result['TransactionID'] ?? '',
+        ];
+
+        $params = $result['ResultParameters']['ResultParameter'] ?? [];
+        foreach ($params as $param) {
+            $key = $param['Key'] ?? '';
+            $value = $param['Value'] ?? null;
+
+            match ($key) {
+                'ReceiptNo' => $parsed['receipt_no'] = $value,
+                'Amount' => $parsed['amount'] = $value,
+                'TransactionStatus' => $parsed['transaction_status'] = $value,
+                'FinalisedTime' => $parsed['finalised_time'] = $value,
+                'InitiatedTime' => $parsed['initiated_time'] = $value,
+                'CreditPartyName' => $parsed['credit_party'] = $value,
+                'DebitPartyName' => $parsed['debit_party'] = $value,
+                'DebitPartyCharges' => $parsed['charges'] = $value,
+                default => null,
+            };
+        }
+
+        return $parsed;
+    }
+
     public function render()
     {
-        // Also show local transaction records
         $localRecord = null;
         if ($this->transactionId) {
             $localRecord = PaymentItem::where('mpesa_transaction_receipt', $this->transactionId)->first();

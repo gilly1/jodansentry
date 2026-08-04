@@ -17,9 +17,21 @@ class HandleB2CResultCallback
         $conversationId = $parser->conversationId();
         $originatorId = $parser->originatorConversationId();
 
-        $item = PaymentItem::where('mpesa_conversation_id', $conversationId)
-            ->orWhere('mpesa_originator_conversation_id', $originatorId)
-            ->first();
+        if (!$conversationId && !$originatorId) {
+            Log::channel('mpesa')->warning('B2C callback: No conversation IDs in payload', [
+                'data' => $data,
+            ]);
+            return;
+        }
+
+        $query = PaymentItem::query();
+        if ($conversationId) {
+            $query->where('mpesa_conversation_id', $conversationId);
+        }
+        if ($originatorId) {
+            $query->{$conversationId ? 'orWhere' : 'where'}('mpesa_originator_conversation_id', $originatorId);
+        }
+        $item = $query->first();
 
         if (!$item) {
             Log::channel('mpesa')->warning('B2C callback: No matching payment item', [

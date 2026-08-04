@@ -53,11 +53,78 @@
 
     {{-- API Response --}}
     @if($statusResult)
-    <div class="bg-white rounded-xl border border-slate-200 p-5">
-        <h3 class="text-sm font-semibold text-slate-900 mb-3">M-Pesa Response</h3>
-        <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
-            <pre class="text-xs text-slate-700 overflow-x-auto whitespace-pre-wrap">{{ json_encode($statusResult, JSON_PRETTY_PRINT) }}</pre>
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-900">M-Pesa Response</h3>
+            <button wire:click="checkCallback" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Check Callback
+            </button>
         </div>
+        <div class="rounded-lg bg-blue-50 border border-blue-200 p-3">
+            <p class="text-sm text-blue-700">Request accepted. Results will arrive via callback.</p>
+            @if($conversationId)
+                <p class="text-xs text-blue-500 mt-1">Conversation ID: {{ $conversationId }}</p>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- Callback Result --}}
+    @if($callbackResult)
+    <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4">
+        <h3 class="text-sm font-semibold text-slate-900 mb-3">Transaction Status Result</h3>
+        @if($callbackResult['result_code'] === '0')
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                @if(!empty($callbackResult['receipt_no']))
+                <div>
+                    <p class="text-xs text-slate-500">Receipt No</p>
+                    <p class="font-medium text-slate-900">{{ $callbackResult['receipt_no'] }}</p>
+                </div>
+                @endif
+                @if(!empty($callbackResult['transaction_status']))
+                <div>
+                    <p class="text-xs text-slate-500">Status</p>
+                    <p class="font-medium text-slate-900">{{ $callbackResult['transaction_status'] }}</p>
+                </div>
+                @endif
+                @if(!empty($callbackResult['amount']))
+                <div>
+                    <p class="text-xs text-slate-500">Amount</p>
+                    <p class="font-medium text-slate-900">KES {{ number_format($callbackResult['amount'], 2) }}</p>
+                </div>
+                @endif
+                @if(!empty($callbackResult['debit_party']))
+                <div>
+                    <p class="text-xs text-slate-500">Debit Party</p>
+                    <p class="text-slate-700">{{ $callbackResult['debit_party'] }}</p>
+                </div>
+                @endif
+                @if(!empty($callbackResult['credit_party']))
+                <div>
+                    <p class="text-xs text-slate-500">Credit Party</p>
+                    <p class="text-slate-700">{{ $callbackResult['credit_party'] }}</p>
+                </div>
+                @endif
+                @if(!empty($callbackResult['charges']))
+                <div>
+                    <p class="text-xs text-slate-500">Charges</p>
+                    <p class="text-slate-700">{{ $callbackResult['charges'] }}</p>
+                </div>
+                @endif
+                @if(!empty($callbackResult['finalised_time']))
+                <div>
+                    <p class="text-xs text-slate-500">Finalised</p>
+                    <p class="text-slate-700">{{ $callbackResult['finalised_time'] }}</p>
+                </div>
+                @endif
+            </div>
+        @else
+            <div class="rounded-lg bg-red-50 border border-red-200 p-3">
+                <p class="text-sm text-red-700">{{ $callbackResult['result_desc'] }}</p>
+                <p class="text-xs text-red-500 mt-1">Result Code: {{ $callbackResult['result_code'] }}</p>
+            </div>
+        @endif
     </div>
     @endif
 

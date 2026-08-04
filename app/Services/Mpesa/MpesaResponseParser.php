@@ -8,12 +8,16 @@ class MpesaResponseParser
 
     public function originatorConversationId(): ?string
     {
-        return $this->data['OriginatorConversationID'] ?? null;
+        return $this->data['OriginatorConversationID']
+            ?? $this->data['Result']['OriginatorConversationID']
+            ?? null;
     }
 
     public function conversationId(): ?string
     {
-        return $this->data['ConversationID'] ?? null;
+        return $this->data['ConversationID']
+            ?? $this->data['Result']['ConversationID']
+            ?? null;
     }
 
     public function responseCode(): ?string

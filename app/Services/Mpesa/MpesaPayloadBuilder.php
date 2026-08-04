@@ -53,6 +53,7 @@ class MpesaPayloadBuilder
         $config = $this->accountResolver->resolve($account);
 
         return [
+            'OriginatorConversationID' => $this->generateOriginatorId(),
             'Initiator' => $config['initiator_name'],
             'SecurityCredential' => $this->securityCredential->generate($account),
             'CommandID' => 'TransactionStatusQuery',
