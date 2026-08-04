@@ -10,7 +10,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // M-Pesa Callbacks (no auth - called by Safaricom)
-Route::prefix('mpesa')->group(function () {
+Route::prefix('sekani')->group(function () {
     Route::post('/b2c/result', [MpesaResultController::class, 'b2cResult']);
     Route::post('/b2c/timeout', [MpesaTimeoutController::class, 'b2cTimeout']);
     Route::post('/account-balance/result', [MpesaResultController::class, 'accountBalanceResult']);
