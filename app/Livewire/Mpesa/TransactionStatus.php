@@ -58,9 +58,21 @@ class TransactionStatus extends Component
         // Look for callback log matching this transaction
         $callbackLog = MpesaApiLog::where('direction', 'callback')
             ->where('endpoint', '/transaction-status/result')
-            ->whereJsonContains('payload->Result->TransactionID', $this->transactionId)
+            ->where(function ($query) {
+                $query->where('payload->Result->TransactionID', $this->transactionId)
+                    ->orWhere('payload', 'like', '%"ReceiptNo"%' . $this->transactionId . '%');
+            })
             ->latest()
             ->first();
+
+        // Fallback: search by ConversationID from the initial response
+        if (!$callbackLog && $this->conversationId) {
+            $callbackLog = MpesaApiLog::where('direction', 'callback')
+                ->where('endpoint', '/transaction-status/result')
+                ->where('payload->Result->ConversationID', $this->conversationId)
+                ->latest()
+                ->first();
+        }
 
         if ($callbackLog) {
             $result = $callbackLog->payload['Result'] ?? $callbackLog->payload;

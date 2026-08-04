@@ -15,11 +15,11 @@
             </button>
         </div>
 
-        <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
+        <div class="relative border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
             <svg class="mx-auto h-10 w-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
             <p class="mt-3 text-sm text-slate-600">Drag and drop your file here, or click to browse</p>
             <p class="mt-1 text-xs text-slate-500">Supports .xlsx, .xls, .csv (max 10MB)</p>
-            <input wire:model="file" type="file" accept=".xlsx,.xls,.csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style="position: relative; margin-top: 12px;">
+            <input wire:model="file" type="file" accept=".xlsx,.xls,.csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
         </div>
 
         @error('file') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror

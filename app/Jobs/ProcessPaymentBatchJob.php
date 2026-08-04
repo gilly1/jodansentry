@@ -27,7 +27,10 @@ class ProcessPaymentBatchJob implements ShouldQueue
         $batch = PaymentBatch::find($this->batchId);
 
         if (!$batch || !$batch->isProcessable()) {
-            return;
+            // return;
+            Log::warning('Batch not found or not processable', [
+                'batch_id' => $this->batchId,
+            ]);
         }
 
         $batch->update([
