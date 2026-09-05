@@ -21,6 +21,7 @@ class PaymentItem extends Model
         'mpesa_originator_conversation_id',
         'mpesa_conversation_id',
         'mpesa_transaction_receipt',
+        'receipt',
         'mpesa_result_code',
         'mpesa_result_description',
         'mpesa_response_code',
